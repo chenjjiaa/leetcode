@@ -6,7 +6,21 @@
 
 // @lc code=start
 func twoSum(nums []int, target int) []int {
-    
-}
-// @lc code=end
+	mapping := make(map[int]int)
+	var result []int
 
+	for i := 0; i < len(nums); i++ {
+		cur := nums[i]
+		div := target - cur
+
+		if v, ok := mapping[div]; ok {
+			return []int{v, i}
+		}
+
+		mapping[cur] = i
+	}
+
+	return result
+}
+
+// @lc code=end
