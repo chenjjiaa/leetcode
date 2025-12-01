@@ -1,9 +1,10 @@
+#![allow(unused)]
+
 use std::collections::HashSet;
 
-#[allow(unused)]
 pub fn length_of_longest_substring(s: String) -> i32 {
     if s.len() == 0 || s.len() == 1 {
-        return  s.len() as i32;
+        return s.len() as i32;
     }
     let mut l = 0;
     let mut r = 0;

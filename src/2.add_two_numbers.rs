@@ -1,11 +1,14 @@
+#![allow(unused)]
+
 use crate::list_node::ListNode;
 
 #[test]
-fn test_add_two_numbers() {
+fn test_add_two_numbers() {}
 
-}
-
-pub fn add_two_numbers(l1: Option<Box<ListNode>>, l2: Option<Box<ListNode>>) -> Option<Box<ListNode>> {
+pub fn add_two_numbers(
+    l1: Option<Box<ListNode>>,
+    l2: Option<Box<ListNode>>,
+) -> Option<Box<ListNode>> {
     let mut carry = 0;
     let mut result: Option<Box<ListNode>> = None;
     let mut current = &mut result;
