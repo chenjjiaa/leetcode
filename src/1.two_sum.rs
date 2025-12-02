@@ -16,7 +16,7 @@ pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {
         div = target - v;
 
         if map.contains_key(&div) {
-            return  vec![*map.get(&div).unwrap(), idx as i32];
+            return vec![*map.get(&div).unwrap(), idx as i32];
         }
         map.insert(*cur, idx as i32);
     }

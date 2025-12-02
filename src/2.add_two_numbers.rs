@@ -1,6 +1,6 @@
 #![allow(unused)]
 
-use crate::list_node::ListNode;
+use crate::structs::list_node::ListNode;
 
 #[test]
 fn test_add_two_numbers() {}
