@@ -1,6 +1,14 @@
 #![allow(unused)]
 
-use std::collections::HashMap;
+use std::{
+    collections::{
+        HashMap,
+        hash_map::RandomState
+    },
+    hash::BuildHasher,
+    usize,
+};
+use usize::MAX;
 
 #[derive(Default, Debug, Clone)]
 #[repr(C)]
@@ -10,8 +18,8 @@ where
 {
     key: i32,
     value: T,
-    pre: Option<usize>,
-    next: Option<usize>,
+    pre: usize,
+    next: usize,
 }
 
 #[derive(Default, Debug, Clone)]
@@ -19,13 +27,13 @@ pub struct LRUCache<T>
 where
     T: Clone + Default,
 {
-    map: HashMap<i32, usize>,
+    map: HashMap<i32, usize, RandomState>,
     vec: Vec<Node<T>>,
-    head: Option<usize>,
-    tail: Option<usize>,
+    head: usize,
+    tail: usize,
 
     /// free slot.
-    free: Option<usize>,
+    free: usize,
     capacity: usize,
 }
 
@@ -35,11 +43,11 @@ where
 {
     pub fn new(capacity: usize) -> Self {
         LRUCache {
-            map: HashMap::new(),
-            vec: Vec::new(),
-            head: None,
-            tail: None,
-            free: None,
+            map: HashMap::with_capacity_and_hasher(capacity, RandomState::new()),
+            vec: Vec::with_capacity(capacity),
+            head: MAX,
+            tail: MAX,
+            free: MAX,
             capacity: capacity,
         }
     }
@@ -47,21 +55,21 @@ where
     // 分配一个新的节点。从 vec 中找到一个空位置 (free slot)，放进一个新的 Node
     // 返回新节点的下标
     fn alloc(&mut self, key: i32, value: T) -> usize {
-        if let Some(idx) = self.free.take() {
-            self.vec[idx] = Node {
+        if self.free != MAX {
+            self.vec[self.free] = Node {
                 key: key,
                 value: value,
-                pre: None,
-                next: None,
+                pre: MAX,
+                next: MAX,
             };
-            idx
+            self.free
         } else {
             let len = self.vec.len();
             self.vec.push(Node {
                 key,
                 value,
-                pre: None,
-                next: None,
+                pre: MAX,
+                next: MAX,
             });
             len
         }
@@ -75,33 +83,34 @@ where
             (p, n)
         };
 
-        if let Some(p) = pre {
-            self.vec[p].next = next;
-        } else {
+        if pre == MAX {
             self.head = next;
-        };
-
-        if let Some(n) = next {
-            self.vec[n].pre = pre;
         } else {
-            self.tail = pre;
+            self.vec[pre].next = next;
         }
 
-        self.vec[idx].pre = None;
-        self.vec[idx].next = None;
+        if next == MAX {
+            self.tail = pre;
+        } else {
+            self.vec[next].pre = pre;
+        }
+
+        self.vec[idx].pre = MAX;
+        self.vec[idx].next = MAX;
     }
 
     // 把下标为 idx 的节点添加到 “链表” 末尾
     fn attach_tail(&mut self, idx: usize) {
-        self.vec[idx].next = None;
+        self.vec[idx].next = MAX;
         self.vec[idx].pre = self.tail;
 
-        if let Some(t) = self.tail {
-            self.vec[t].next = Some(idx);
+        if self.tail != MAX {
+            self.vec[self.tail].next = idx;
         } else {
-            self.head = Some(idx);
+            self.head = idx;
         }
-        self.tail = Some(idx);
+
+        self.tail = idx;
     }
 
     pub fn put(&mut self, key: i32, value: T) {
@@ -113,11 +122,11 @@ where
         }
 
         if self.capacity == self.vec.len() {
-            let old_idx = self.head.unwrap();
+            let old_idx = self.head;
             let old_key = self.vec[old_idx].key;
 
             self.detech(old_idx);
-            self.free = Some(old_idx);
+            self.free = old_idx;
             self.map.remove(&old_key);
         }
 
